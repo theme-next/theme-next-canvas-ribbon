@@ -1,73 +1,68 @@
 /**
- * Created by zproo on 2017/4/8.
- */
-!function () {
-  function getAttr(script, attr, default_val) {
-      return Number(script.getAttribute(attr)) || default_val;
+ * Copyright (c) 2016 hustcc
+ * License: MIT
+ * Version: v1.0.1
+ * GitHub: https://github.com/hustcc/ribbon.js
+**/
+/*jshint -W030 */
+! function() {
+  function attr(node, attr, default_value) {
+    return Number(node.getAttribute(attr)) || default_value;
   }
 
-  // 获取自定义配置
-  var ribbon = document.getElementById('ribbon');  // 当前加载的script
+  // get user config
+  var scripts = document.getElementsByTagName('script'),
+    script = scripts[scripts.length - 1]; // 当前加载的script
   config = {
-      zIndex: getAttr(ribbon, "zIndex", -1), // z-index
-      alpha: getAttr(ribbon, "alpha", 0.6), // alpha
-      ribbon_width: getAttr(ribbon, "size", 90), // size
+    z: attr(script, "zIndex", -1), // z-index
+    a: attr(script, "alpha", 0.6), // alpha
+    s: attr(script, "size", 90), // size
   };
 
-  var canvas = document.createElement("canvas");
-  canvas.style.cssText = "position:fixed;top:0;left:0;z-index:"+config.zIndex;
-  document.getElementsByTagName("body")[0].appendChild(canvas);
+  var canvas = document.createElement('canvas'),
+    g2d = canvas.getContext('2d'),
+    pr = window.devicePixelRatio || 1,
+    width = window.innerWidth,
+    height = window.innerHeight,
+    f = config.s,
+    q, t,
+    m = Math,
+    r = 0,
+    pi = m.PI*2,
+    cos = m.cos,
+    random = m.random;
+  canvas.width = width * pr;
+  canvas.height = height * pr;
+  g2d.scale(pr, pr);
+  g2d.globalAlpha = config.a;
+  canvas.style.cssText = 'opacity: ' + config.a + ';position:fixed;top:0;left:0;z-index: ' + config.z + ';width:100%;height:100%;pointer-events:none;';
+  // create canvas
+  document.getElementsByTagName('body')[0].appendChild(canvas);
 
-  var canvasRibbon = canvas,
-      ctx = canvasRibbon.getContext('2d'),    // 获取canvas 2d上下文
-      dpr = window.devicePixelRatio || 1, // the size of one CSS pixel to the size of one physical pixel.
-      width = window.innerWidth,     // 返回窗口的文档显示区的宽高
-      height = window.innerHeight,
-      RIBBON_WIDTH = config.ribbon_width,
-      path,
-      math = Math,
-      r = 0,
-      PI_2 = math.PI * 2,    // 圆周率*2
-      cos = math.cos,   // cos函数返回一个数值的余弦值（-1~1）
-      random = math.random;   // 返回0-1随机数
-
-  canvasRibbon.width = width * dpr;     // 返回实际宽高
-  canvasRibbon.height = height * dpr;
-  ctx.scale(dpr, dpr);    // 水平、竖直方向缩放
-  ctx.globalAlpha = config.alpha;  // 图形透明度
-
-  function init() {
-      ctx.clearRect(0, 0, width, height);     // 擦除之前绘制内容
-      path = [{x: 0, y: height * 0.7 + RIBBON_WIDTH}, {x: 0, y: height * 0.7 - RIBBON_WIDTH}];
-      // 路径没有填满屏幕宽度时，绘制路径
-      while (path[1].x < width + RIBBON_WIDTH) {
-          draw(path[0], path[1])
-      }
+  function redraw() {
+    g2d.clearRect(0, 0, width, height);
+    q = [{x: 0, y: height * 0.7 + f}, {x: 0, y: height * 0.7 - f}];
+    while(q[1].x < width + f) draw(q[0], q[1]);
+  }
+  function draw(i, j) {
+    g2d.beginPath();
+    g2d.moveTo(i.x, i.y);
+    g2d.lineTo(j.x, j.y);
+    var k = j.x + (random()*2-0.25)*f, n = line(j.y);
+    g2d.lineTo(k, n);
+    g2d.closePath();
+    r -= pi / -50;
+    g2d.fillStyle = '#'+(cos(r)*127+128<<16 | cos(r+pi/3)*127+128<<8 | cos(r+pi/3*2)*127+128).toString(16);
+    g2d.fill();
+    q[0] = q[1];
+    q[1] = {x: k, y: n};
+  }
+  function line(p){
+    t = p + (random() * 2 - 1.1) * f;
+    return (t > height || t < 0) ? line(p) : t;
   }
 
-  function draw(start, end) {
-      ctx.beginPath();    // 创建一个新的路径
-      ctx.moveTo(start.x, start.y);   // path起点
-      ctx.lineTo(end.x, end.y);   // path终点
-      var nextX = end.x + (random() * 2 - 0.25) * RIBBON_WIDTH,
-          nextY = geneY(end.y);
-      ctx.lineTo(nextX, nextY);
-      ctx.closePath();
-
-      r -= PI_2 / -50;
-      // 随机生成并设置canvas路径16进制颜色
-      ctx.fillStyle = '#' + (cos(r) * 127 + 128 << 16 | cos(r + PI_2 / 3) * 127 + 128 << 8 | cos(r + PI_2 / 3 * 2) * 127 + 128).toString(16);
-      ctx.fill();     // 根据当前样式填充路径
-      path[0] = path[1];    // 起点更新为当前终点
-      path[1] = {x: nextX, y: nextY}     // 更新终点
-  }
-
-  function geneY(y) {
-      var temp = y + (random() * 2 - 1.1) * RIBBON_WIDTH;
-      return (temp > height || temp < 0) ? geneY(y) : temp;
-  }
-
-  document.onclick = init;
-  document.ontouchstart = init;
-  init();
+  document.onclick = redraw;
+  document.ontouchstart = redraw;
+  redraw();
 }();

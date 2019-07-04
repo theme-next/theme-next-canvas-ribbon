@@ -1,4 +1,4 @@
-<h1 align="center"><a href="https://github.com/zproo/canvas-ribbon">canvas-ribbon.js</a> for <a href="https://github.com/theme-next">NexT</a></h1>
+<h1 align="center"><a href="https://github.com/hustcc/ribbon.js">canvas-ribbon.js</a> for <a href="https://github.com/theme-next">NexT</a></h1>
 
 <h1 align="center">Installation</h1>
 
